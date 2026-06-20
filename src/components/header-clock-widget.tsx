@@ -14,6 +14,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ApiResponse } from "@/types/api";
 import type { ClockStatusResponse } from "@/types/compliance";
 import { useClockMutations } from "@/components/clock-mutations";
+import { useLiveElapsedSeconds, formatStopwatch } from "@/components/use-live-clock";
 import { Button } from "@/components/ui/button";
 import { Play, Square, Coffee } from "lucide-react";
 
@@ -52,6 +53,13 @@ export function HeaderClockWidget() {
     optimistic === "resume" ||
     (!!activeEntry?.status && activeEntry.status === "running" && !activeBreak && optimistic !== "clock-out");
   const showPaused = optimistic === "pause" || (!!activeBreak && optimistic !== "resume");
+  const isClockedIn = showClockedIn || showPaused;
+
+  // Live worked-since-clock_in timer (display only; net of completed breaks).
+  const elapsed = useLiveElapsedSeconds(
+    isClockedIn ? activeEntry?.clock_in : null,
+    activeEntry?.break_minutes ?? 0,
+  );
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["presence"] });
   const wrap = (
@@ -74,6 +82,23 @@ export function HeaderClockWidget() {
       {error && (
         <span className="hidden sm:inline text-xs text-destructive max-w-[12rem] truncate">
           {error}
+        </span>
+      )}
+
+      {/* Live elapsed timer — shown whenever clocked in (running or paused) */}
+      {isClockedIn && activeEntry?.clock_in && (
+        <span
+          className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/60"
+          title={showPaused ? "In Pause" : "Eingestempelt"}
+        >
+          <span
+            className={`size-2 rounded-full ${
+              showPaused ? "bg-amber-500" : "bg-green-500 animate-pulse"
+            }`}
+          />
+          <span className="font-mono text-sm font-medium tabular-nums">
+            {formatStopwatch(elapsed)}
+          </span>
         </span>
       )}
 

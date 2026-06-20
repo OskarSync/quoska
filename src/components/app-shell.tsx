@@ -7,6 +7,7 @@ import { Sidebar } from "@/components/sidebar";
 import { BottomNav } from "@/components/bottom-nav";
 import { AppHeader } from "@/components/app-header";
 import { PresencePanel } from "@/components/presence-panel";
+import { ClockTabTitle } from "@/components/clock-tab-title";
 import type { ReactNode } from "react";
 import type { Role } from "@/types";
 
@@ -64,6 +65,9 @@ export function AppShell({ role, userName, children }: AppShellProps) {
       </main>
 
       <PresencePanel open={presenceOpen} onClose={() => setPresenceOpen(false)} />
+
+      {/* Live clock timer in the browser tab title (display only) */}
+      <ClockTabTitle />
 
       <BottomNav role={role} />
     </div>
