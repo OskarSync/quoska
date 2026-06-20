@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "stripe": {
+      "url": "https://mcp.stripe.com/",
+      "type": "http",
+      "headers": {
+        "Authorization": "Bearer ${STRIPE_SECRET_KEY}"
+      }
+    }
+  }
+}

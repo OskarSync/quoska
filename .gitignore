@@ -1,0 +1,44 @@
+# dependencies
+node_modules/
+
+# next.js build output
+.next/
+.next-e2e/
+out/
+
+# env — NEVER commit real secrets. Use .env.example as the template.
+.env
+.env.local
+.env.*.local
+
+# misc
+*.pem
+*.tsbuildinfo
+.DS_Store
+next-env.d.ts
+
+# IDE / editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# deploy
+.vercel
+
+# supabase local state
+supabase/.branches/
+supabase/.temp/
+
+# test artifacts
+test-results/
+playwright-report/
+playwright/.cache/
+
+# agent / planning tooling (internal, not published)
+.rpi/

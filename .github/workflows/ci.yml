@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      # Billing tested in no-keys mode (the open-source / self-host path).
+      STRIPE_SECRET_KEY: ""
+      STRIPE_PRO_PRICE_ID: ""
+      STRIPE_WEBHOOK_SECRET: ""
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit + legal-compliance tests
+        run: npm test
+
+      - name: Custom legal-rule tests
+        run: node tools/eslint-rules/run-tests.mjs
+
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    env:
+      # Playwright boots its own dev server via webServer config (no-keys mode).
+      PLAYWRIGHT_BASE_URL: http://localhost:3100
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Local Supabase stack for E2E. Tests use the well-known local demo keys.
+      # Replace with your own supabase setup action if you need a persistent DB.
+      - name: Start local Supabase
+        run: |
+          echo "TODO: boot supabase stack (docker) for E2E"
+          # Example: docker compose up -d ... or supabase start
+        continue-on-error: true
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright tests
+        run: npx playwright test
+
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
