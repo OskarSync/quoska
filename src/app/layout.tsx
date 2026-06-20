@@ -75,8 +75,8 @@ export default function RootLayout({
   return (
     <html lang="de" className={cn("h-full antialiased", "font-sans", inter.variable)}>
       <head>
-        <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        <link rel="icon" href="/icons/favicon-32.png" type="image/png" sizes="32x32" />
+        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" sizes="180x180" />
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <TooltipProvider>

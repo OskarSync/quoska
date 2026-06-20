@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import type { Role } from "@/types";
 import { NotificationBadge } from "@/components/notification-badge";
@@ -14,7 +15,6 @@ import {
   BarChart3,
   Settings,
   LogOut,
-  Timer,
   Palmtree,
   Thermometer,
   Briefcase,
@@ -111,9 +111,16 @@ export function Sidebar({ role, userName, onSignOut }: SidebarProps) {
     <aside className="hidden md:flex md:w-[260px] md:flex-col md:fixed md:inset-y-0 border-r border-gray-200 bg-white">
       {/* Logo */}
       <div className="flex items-center gap-2 px-5 h-16 border-b border-gray-100">
-        <div className="flex items-center justify-center size-8 rounded-lg bg-violet-600">
-          <Timer className="size-4 text-white" />
-        </div>
+        {/* Next/Image with fixed dims avoids layout shift; the source PNG has
+            white knocked out to transparency so it sits on the white sidebar. */}
+        <Image
+          src="/icons/logo.png"
+          alt="Quoska"
+          width={32}
+          height={32}
+          priority
+          className="size-8 shrink-0"
+        />
         <span className="text-base font-bold text-gray-900">
           Quoska
         </span>
