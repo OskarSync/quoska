@@ -1,9 +1,21 @@
-# Quoska
+<p align="center">
+  <img src="public/banner.png" alt="Quoska" width="833">
+</p>
 
-**Gesetzlich vorgeschriebene Zeiterfassung für deutsche KMU — als Flatrate.**
-Pausen nach §4 ArbZG, revisionssicherer Audit-Trail, DSGVO-konform. Staffelpreise nach Teamgröße — ab 9 €/Monat, ohne Pro-Kopf-Abrechnung.
+<h1 align="center">Quoska</h1>
 
-[Hosted Service](https://quoska.app) · [Selbst hosten](#-selbst-hosting) · [Dokumentation](docs)
+<p align="center">
+  <strong>Gesetzlich vorgeschriebene Zeiterfassung für deutsche KMU — als Flatrate.</strong><br>
+  Pausen nach §4 ArbZG, revisionssicherer Audit-Trail, DSGVO-konform. Staffelpreise nach Teamgröße — ab 9 €/Monat, ohne Pro-Kopf-Abrechnung.
+</p>
+
+<p align="center">
+  <a href="https://quoska.app">Hosted Service</a> ·
+  <a href="#-selbst-hosting">Selbst hosten</a> ·
+  <a href="docs">Dokumentation</a>
+</p>
+
+---
 
 Quoska ist die Arbeitzeit-Erfassung, die das Arbeitszeitgesetz (ArbZG) von sich aus fordert: Server-seitige Zeitstempel, unveränderlicher Audit-Trail, harte Pausen- und Ruhezeiten, 2-jährige Aufbewahrung (§16 ArbZG) — als schlanke Flatrate statt Pro-Kopf-Preis wie bei der Konkurrenz.
 
