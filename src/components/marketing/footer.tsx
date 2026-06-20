@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Timer } from "lucide-react";
+import Image from "next/image";
 import { currentYear } from "@/config/server/site-meta";
 
 const FOOTER_LINKS = [
@@ -41,9 +41,13 @@ export function MarketingFooter() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2.5">
-              <span className="flex size-8 items-center justify-center rounded-lg bg-slate-900 text-white">
-                <Timer className="size-4" />
-              </span>
+              <Image
+                src="/icons/logo.png"
+                alt="Quoska"
+                width={32}
+                height={32}
+                className="size-8 shrink-0"
+              />
               <span className="text-lg font-bold tracking-tight text-slate-900">
                 Quoska
               </span>

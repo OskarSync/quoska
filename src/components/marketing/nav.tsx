@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Timer, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 
 const NAV_LINKS = [
   { href: "/#features", label: "Funktionen" },
@@ -30,9 +31,14 @@ export function MarketingNav({
           className="flex items-center gap-2.5"
           aria-label="Quoska — Startseite"
         >
-          <span className="flex size-8 items-center justify-center rounded-lg bg-slate-900 text-white">
-            <Timer className="size-4" />
-          </span>
+          <Image
+            src="/icons/logo.png"
+            alt="Quoska"
+            width={32}
+            height={32}
+            priority
+            className="size-8 shrink-0"
+          />
           <span className="text-lg font-bold tracking-tight text-slate-900">
             Quoska
           </span>

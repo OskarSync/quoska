@@ -4,7 +4,8 @@
  */
 
 import type { ReactNode } from "react";
-import { Timer, Check } from "lucide-react";
+import Image from "next/image";
+import { Check } from "lucide-react";
 import { currentYear } from "@/config/server/site-meta";
 
 export default function AuthLayout({
@@ -20,8 +21,8 @@ export default function AuthLayout({
         <div className="relative flex flex-col justify-between w-full p-10 text-white">
           {/* Logo */}
           <div className="flex items-center gap-2">
-            <div className="flex items-center justify-center size-9 rounded-lg bg-white/15 backdrop-blur-sm">
-              <Timer className="size-5 text-white" />
+            <div className="flex items-center justify-center size-9 rounded-lg bg-white">
+              <Image src="/icons/logo.png" alt="Quoska" width={24} height={24} priority />
             </div>
             <span className="text-lg font-bold">Quoska</span>
           </div>
@@ -71,7 +72,7 @@ export default function AuthLayout({
           {/* Mobile-only logo */}
           <div className="lg:hidden mb-8 text-center">
             <div className="inline-flex items-center justify-center size-12 rounded-xl bg-violet-600 mb-3">
-              <Timer className="size-6 text-white" />
+              <Image src="/icons/logo.png" alt="Quoska" width={28} height={28} className="rounded-md bg-white p-0.5" priority />
             </div>
             <h1 className="text-xl font-bold text-gray-900">
               Quoska
