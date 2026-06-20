@@ -20,9 +20,9 @@ export default function AuthLayout({
         <div className="absolute inset-0 bg-gradient-to-br from-violet-600 via-violet-700 to-purple-800" />
         <div className="relative flex flex-col justify-between w-full p-10 text-white">
           {/* Logo */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center justify-center size-9 rounded-lg bg-white">
-              <Image src="/icons/logo.png" alt="Quoska" width={24} height={24} priority />
+          <div className="flex items-center gap-2.5">
+            <div className="flex items-center justify-center size-10 rounded-lg bg-white">
+              <Image src="/icons/logo.png" alt="Quoska" width={30} height={30} priority />
             </div>
             <span className="text-lg font-bold">Quoska</span>
           </div>
@@ -71,8 +71,8 @@ export default function AuthLayout({
         <div className="w-full max-w-sm">
           {/* Mobile-only logo */}
           <div className="lg:hidden mb-8 text-center">
-            <div className="inline-flex items-center justify-center size-12 rounded-xl bg-violet-600 mb-3">
-              <Image src="/icons/logo.png" alt="Quoska" width={28} height={28} className="rounded-md bg-white p-0.5" priority />
+            <div className="inline-flex items-center justify-center size-14 rounded-xl bg-violet-600 mb-3">
+              <Image src="/icons/logo.png" alt="Quoska" width={32} height={32} className="rounded-md bg-white p-1" priority />
             </div>
             <h1 className="text-xl font-bold text-gray-900">
               Quoska
