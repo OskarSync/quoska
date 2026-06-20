@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import type { Role } from "@/types";
 import { NotificationBadge } from "@/components/notification-badge";
@@ -111,15 +110,14 @@ export function Sidebar({ role, userName, onSignOut }: SidebarProps) {
     <aside className="hidden md:flex md:w-[260px] md:flex-col md:fixed md:inset-y-0 border-r border-gray-200 bg-white">
       {/* Logo */}
       <div className="flex items-center gap-2 px-5 h-16 border-b border-gray-100">
-        {/* Next/Image with fixed dims avoids layout shift; the source PNG has
-            white knocked out to transparency so it sits on the white sidebar. */}
-        <Image
+        {/* Plain <img> (not next/image) so size is predictable and not subject
+            to the optimizer's cached variants — see marketing/nav.tsx. */}
+        <img
           src="/icons/logo.png"
           alt="Quoska"
-          width={30}
-          height={30}
-          priority
-          className="size-[30px] shrink-0"
+          width={28}
+          height={28}
+          className="size-7 shrink-0"
         />
         <span className="text-base font-bold text-gray-900">
           Quoska

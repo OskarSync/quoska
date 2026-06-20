@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { currentYear } from "@/config/server/site-meta";
 
 const FOOTER_LINKS = [
@@ -41,12 +40,12 @@ export function MarketingFooter() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2">
-              <Image
+              <img
                 src="/icons/logo.png"
                 alt="Quoska"
-                width={30}
-                height={30}
-                className="size-[30px] shrink-0"
+                width={28}
+                height={28}
+                className="size-7 shrink-0"
               />
               <span className="text-lg font-bold tracking-tight text-slate-900">
                 Quoska

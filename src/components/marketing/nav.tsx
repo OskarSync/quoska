@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
@@ -31,13 +30,15 @@ export function MarketingNav({
           className="flex items-center gap-2"
           aria-label="Quoska — Startseite"
         >
-          <Image
+          {/* Plain <img>: next/image's optimizer + cache was serving a stale
+              smaller raster whenever logo.png changed. A 32px icon gets no
+              benefit from the optimizer, so we skip it for predictability. */}
+          <img
             src="/icons/logo.png"
             alt="Quoska"
-            width={30}
-            height={30}
-            priority
-            className="size-[30px] shrink-0"
+            width={28}
+            height={28}
+            className="size-7 shrink-0"
           />
           <span className="text-lg font-bold tracking-tight text-slate-900">
             Quoska
