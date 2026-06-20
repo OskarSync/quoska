@@ -199,10 +199,20 @@ describe("employeeService", () => {
       expect(result.data!.canAddMore).toBe(false);
     });
 
-    test("returns no limit for team plan", async () => {
+    test("returns limit 10 for team plan", async () => {
       const { getTenantPlan, countActiveEmployees } = await import("@/repos/employeeRepo");
       const { getPlanLimitStatus } = await import("@/services/employeeService");
       vi.mocked(getTenantPlan).mockResolvedValueOnce("team");
+      vi.mocked(countActiveEmployees).mockResolvedValueOnce(10);
+      const result = await getPlanLimitStatus(createRegularMock(), "t-1");
+      expect(result.data!.limit).toBe(10);
+      expect(result.data!.canAddMore).toBe(false);
+    });
+
+    test("returns no limit for pro plan", async () => {
+      const { getTenantPlan, countActiveEmployees } = await import("@/repos/employeeRepo");
+      const { getPlanLimitStatus } = await import("@/services/employeeService");
+      vi.mocked(getTenantPlan).mockResolvedValueOnce("pro");
       vi.mocked(countActiveEmployees).mockResolvedValueOnce(10);
       const result = await getPlanLimitStatus(createRegularMock(), "t-1");
       expect(result.data!.limit).toBeNull();

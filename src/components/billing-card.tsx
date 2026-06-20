@@ -1,13 +1,13 @@
 /**
- * BillingCard — subscription status + upgrade/manage actions.
+ * BillingCard — subscription status + tier upgrade actions.
  *
- * Renders ONLY when the deployment can process payments
- * (NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY + STRIPE_PRO_PRICE_ID set), and only for
- * admins. On the open-source / self-host build (no keys) this component
- * renders nothing — the whole billing surface is hidden.
+ * Renders ONLY when the deployment can process payments (at least one
+ * STRIPE_*_PRICE_ID set + secret key), and only for admins. On the open-source
+ * / self-host build (no keys) this renders nothing — the whole billing surface
+ * is hidden.
  *
- * Fetches /api/v1/billing/status, shows the current plan, and offers either
- * "Auf Pro upgraden" (checkout) or "Abonnement verwalten" (Stripe portal).
+ * Tiers (centralized in @/config/plans):
+ *   free €0 ≤3 · team €9 ≤10 · business €59 ≤50 · pro €99 unlimited
  */
 
 "use client";
@@ -15,24 +15,21 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ApiResponse } from "@/types/api";
 import type { Plan } from "@/types/tenant";
+import { PLANS } from "@/config/plans";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Sparkles, CheckCircle2 } from "lucide-react";
+import { Sparkles, Check } from "lucide-react";
 
 interface BillingStatus {
   plan: Plan;
   billingEnabled: boolean;
   canUpgrade: boolean;
-  freeLimit: number | null;
+  employeeLimit: number | null;
 }
 
-const PLAN_LABEL: Record<Plan, string> = {
-  free: "Free",
-  team: "Team",
-  pro: "Pro",
-};
+const PAID_TIERS: ReadonlyArray<"team" | "business" | "pro"> = ["team", "business", "pro"];
 
 export function BillingCard() {
   const queryClient = useQueryClient();
@@ -49,18 +46,22 @@ export function BillingCard() {
   // Hidden entirely when billing isn't publicly enabled (open-source build).
   if (!isLoading && !data?.canUpgrade) return null;
 
-  const isPro = data?.plan === "pro";
+  const currentPlan = data?.plan ?? "free";
 
-  const startCheckout = async () => {
-    const res = await fetch("/api/v1/stripe/checkout", { method: "POST" });
+  const startCheckout = async (tier: "team" | "business" | "pro") => {
+    const res = await fetch("/api/v1/stripe/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tier }),
+    });
     const json: ApiResponse<{ url: string }> = await res.json();
-    if (json.data?.url) window.location.href = json.data.url;
+    if (json.data?.url) window.location.assign(json.data.url);
   };
 
   const openPortal = async () => {
     const res = await fetch("/api/v1/stripe/portal", { method: "POST" });
     const json: ApiResponse<{ url: string }> = await res.json();
-    if (json.data?.url) window.location.href = json.data.url;
+    if (json.data?.url) window.location.assign(json.data.url);
   };
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["billingStatus"] });
@@ -82,38 +83,63 @@ export function BillingCard() {
               <div>
                 <p className="text-sm text-muted-foreground">Aktueller Tarif</p>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-lg font-semibold">{PLAN_LABEL[data.plan]}</span>
-                  {isPro && (
+                  <span className="text-lg font-semibold">{PLANS[currentPlan].label}</span>
+                  {currentPlan !== "free" && (
                     <Badge className="bg-violet-100 text-violet-700 border-0">
-                      <CheckCircle2 className="size-3 mr-1" />
+                      <Check className="size-3 mr-1" />
                       Aktiv
                     </Badge>
                   )}
                 </div>
               </div>
               <div className="text-right text-sm text-muted-foreground">
-                {data.freeLimit !== null
-                  ? `${data.freeLimit} Mitarbeiter`
+                {data.employeeLimit !== null
+                  ? `bis ${data.employeeLimit} Mitarbeiter`
                   : "Unbegrenzt"}
               </div>
             </div>
 
-            {isPro ? (
+            {/* Tier upgrade grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+              {PAID_TIERS.map((tier) => {
+                const cfg = PLANS[tier];
+                const isCurrent = currentPlan === tier;
+                return (
+                  <div
+                    key={tier}
+                    className={`rounded-lg border p-3 ${
+                      isCurrent ? "border-violet-300 bg-violet-50/50" : "border-border"
+                    }`}
+                  >
+                    <p className="text-sm font-semibold">{cfg.label}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {cfg.priceEur} €/Monat
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {cfg.employeeLimit === null
+                        ? "Unbegrenzt"
+                        : `bis ${cfg.employeeLimit} Mitarbeiter`}
+                    </p>
+                    <Button
+                      size="sm"
+                      variant={isCurrent ? "outline" : "default"}
+                      disabled={isCurrent}
+                      onClick={() => startCheckout(tier)}
+                      className="w-full mt-2"
+                    >
+                      {isCurrent ? "Aktuell" : `${cfg.label} wählen`}
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+
+            {currentPlan !== "free" && (
               <Button variant="outline" onClick={openPortal} className="w-full">
-                Abonnement verwalten
+                Abonnement verwalten / kündigen
               </Button>
-            ) : (
-              <>
-                <p className="text-sm text-muted-foreground">
-                  Upgrade auf Pro für unbegrenzte Mitarbeiter — 39&nbsp;€&nbsp;/&nbsp;Monat.
-                </p>
-                <Button onClick={startCheckout} className="w-full">
-                  Auf Pro upgraden
-                </Button>
-              </>
             )}
 
-            {/* After returning from checkout/portal, allow a manual refresh */}
             <Button variant="ghost" size="sm" onClick={refresh} className="w-full">
               Status aktualisieren
             </Button>

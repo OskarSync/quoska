@@ -12,6 +12,7 @@ import { createClient } from "@/config/supabase/server";
 import { getActivePlan } from "@/services/subscriptionService";
 import { getEmployeeFromAuth } from "@/services/timeEntryService";
 import { isBillingEnabled } from "@/lib/stripe";
+import { employeeLimitForPlan } from "@/config/plans";
 import type { ApiResponse } from "@/types/api";
 import type { Plan } from "@/types/tenant";
 
@@ -21,11 +22,9 @@ export interface BillingStatus {
   billingEnabled: boolean;
   /** Whether the billing/upgrade UI should be visible to this client. */
   canUpgrade: boolean;
-  /** Free-plan employee limit (for display). null when unlimited. */
-  freeLimit: number | null;
+  /** Employee cap for the current plan (null = unlimited). */
+  employeeLimit: number | null;
 }
-
-const FREE_PLAN_EMPLOYEE_LIMIT = 3;
 
 export async function GET() {
   try {
@@ -43,10 +42,9 @@ export async function GET() {
 
     const billingEnabled = planResult.data?.billingEnabled ?? false;
     // The upgrade UI is shown whenever this deployment can process payments
-    // (server-side hosted Checkout needs the secret key + price only — no
-    // publishable key, since we don't use client-side Stripe Elements).
+    // (server-side hosted Checkout needs the secret key + at least one price).
     const canUpgrade = isBillingEnabled();
-    const freeLimit = plan === "free" ? FREE_PLAN_EMPLOYEE_LIMIT : null;
+    const employeeLimit = employeeLimitForPlan(plan);
 
     return NextResponse.json<ApiResponse<BillingStatus>>(
       {
@@ -54,7 +52,7 @@ export async function GET() {
           plan,
           billingEnabled,
           canUpgrade,
-          freeLimit,
+          employeeLimit,
         },
         error: null,
       },

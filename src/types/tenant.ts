@@ -1,4 +1,4 @@
-export type Plan = "free" | "team" | "pro";
+export type Plan = "free" | "team" | "business" | "pro";
 
 export type Bundesland =
   | "baden-wuerttemberg"

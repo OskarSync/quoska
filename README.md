@@ -1,11 +1,11 @@
 # Quoska
 
 **Gesetzlich vorgeschriebene Zeiterfassung für deutsche KMU — als Flatrate.**
-Pausen nach §4 ArbZG, revisionssicherer Audit-Trail, DSGVO-konform. 39 € im Monat für das gesamte Team, unabhängig von der Mitarbeiterzahl.
+Pausen nach §4 ArbZG, revisionssicherer Audit-Trail, DSGVO-konform. Staffelpreise nach Teamgröße — ab 9 €/Monat, ohne Pro-Kopf-Abrechnung.
 
 [Hosted Service](https://quoska.app) · [Selbst hosten](#-selbst-hosting) · [Dokumentation](docs)
 
-Quoska ist die Arbeitzeit-Erfassung, die das Arbeitszeitgesetz (ArbZG) von sich aus fordert: Server-seitige Zeitstempel, unveränderlicher Audit-Trail, harte Pausen- und Ruhezeiten, 2-jährige Aufbewahrung (§16 ArbZG) — und das als schlanke Flatrate statt pro-Mitarbeiter-Preis.
+Quoska ist die Arbeitzeit-Erfassung, die das Arbeitszeitgesetz (ArbZG) von sich aus fordert: Server-seitige Zeitstempel, unveränderlicher Audit-Trail, harte Pausen- und Ruhezeiten, 2-jährige Aufbewahrung (§16 ArbZG) — als schlanke Flatrate statt Pro-Kopf-Preis wie bei der Konkurrenz.
 
 ---
 
@@ -18,8 +18,24 @@ Quoska ist die Arbeitzeit-Erfassung, die das Arbeitszeitgesetz (ArbZG) von sich 
 
 > **Open Source, nicht Open-Core.** Die gesamte Anwendung ist offen — auch das
 > Stripe-Billing. Ohne konfigurierte Stripe-Schlüssel läuft die App im
-> Kostenlos-Tarif (3 Mitarbeiter); die gleiche Codebasis wird mit Schlüsseln zur
-> kostenpflichtigen Flatrate. Kein Feature-Gating, keine ausgelagerten Module.
+> Kostenlos-Tarif (3 Mitarbeiter); die gleiche Codebasis wird mit Schlüsseln
+> zur kostenpflichtigen Flatrate. Kein Feature-Gating, keine ausgelagerten
+> Module.
+
+---
+
+## Preise
+
+Flatrate nach Teamgröße — kein Pro-Kopf-Preis, keine unliebsamen Überraschungen.
+
+| Plan | Preis | Teamgröße | Für wen |
+| --- | --- | --- | --- |
+| **Free** | €0 | bis 3 | Testen, Solo, Kleinstbetriebe |
+| **Team** | **€9/Monat** | bis 10 | Handwerk, kleine Büros — das Kernmarkt-Segment |
+| **Business** | €59/Monat | bis 50 | Wachsende KMU |
+| **Pro** | €99/Monat | unbegrenzt | Größere Betriebe |
+
+Zum Vergleich: klassische Pro-Kopf-Tools kosten ~6 €/Mitarbeiter — bei 10 Mitarbeitern also ~60 €, bei 30 ~180 €. Quoska bleibt bei 9 € bzw. 59 € flat.
 
 ---
 
@@ -108,7 +124,7 @@ Für einen öffentlichen Server zusätzlich:
 
 1. Eine eigene Supabase-Instanz (EU-Region) einrichten und die Migrations in [`supabase/migrations/`](supabase/migrations) anwenden.
 2. `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` setzen.
-3. Optional Stripe (`STRIPE_SECRET_KEY`, `STRIPE_PRO_PRICE_ID`, `STRIPE_WEBHOOK_SECRET`) für Abonnements — ohne diese Schlüssel läuft die App im Kostenlos-Tarif.
+3. Optional Stripe (`STRIPE_SECRET_KEY`, `STRIPE_TEAM_PRICE_ID` / `STRIPE_BUSINESS_PRICE_ID` / `STRIPE_PRO_PRICE_ID`, `STRIPE_WEBHOOK_SECRET`) für Abonnements — ohne diese Schlüssel läuft die App im Kostenlos-Tarif.
 
 > **Hinweis zur Haftung:** Beim Selbst-Hosting tragen *Sie* die Verantwortung
 > für ArbZG-/GoBD-/DSGVO-Konformität, EU-Hosting, AVV und Datensicherung. Genau

@@ -19,7 +19,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Plan } from "@/types/tenant";
 import type { ApiResponse } from "@/types/api";
 import { success, failure } from "@/types/api";
-import { getStripe, isBillingEnabled } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
+import { planFromStripePriceId, configuredPriceIds } from "@/config/plans";
 import {
   recordWebhookEvent,
   markWebhookProcessed,
@@ -43,20 +44,23 @@ export async function getActivePlan(
   const plan = await getTenantPlan(supabase, tenantId);
   return success({
     plan: plan ?? "free",
-    billingEnabled: isBillingEnabled(),
+    billingEnabled: getStripe() !== null && configuredPriceIds().length > 0,
   });
 }
 
 /**
- * Create a Stripe Checkout Session for upgrading to Pro.
- * Returns the URL the browser should redirect to.
+ * Create a Stripe Checkout Session for upgrading to a paid tier.
+ * Returns the URL the browser should redirect to. The priceId is passed in
+ * session metadata so the webhook can map the completed checkout back to the
+ * correct plan tier (team/business/pro).
  * Throws if billing is disabled (caller should check isBillingEnabled first).
  */
-export async function createProCheckout(
+export async function createCheckout(
   tenantId: string,
   tenantName: string,
   customerEmail: string,
   priceId: string,
+  tier: "team" | "business" | "pro",
   appUrl: string,
 ): Promise<ApiResponse<{ url: string }>> {
   const stripe = getStripe();
@@ -69,7 +73,7 @@ export async function createProCheckout(
     client_reference_id: tenantId,
     customer_email: customerEmail,
     subscription_data: {
-      metadata: { tenantId, tenantName },
+      metadata: { tenantId, tenantName, priceId, tier },
     },
     success_url: `${appUrl}/app/settings/billing?status=success`,
     cancel_url: `${appUrl}/app/settings/billing?status=cancelled`,
@@ -144,13 +148,18 @@ function extractTenantId(event: Stripe.Event): string | null {
   return obj.client_reference_id ?? obj.metadata?.tenantId ?? null;
 }
 
-/** Map a subscription's Stripe status to a Quoska plan. */
-function planForSubscriptionStatus(status: string): Plan {
-  // 'active' | 'trialing' | 'past_due' all keep access; 'canceled'/'unpaid'/etc → free.
-  if (status === "active" || status === "trialing" || status === "past_due") {
-    return "pro";
+/** Map a subscription's Stripe status + price to a Quoska plan. */
+function planForSubscription(status: string, priceId?: string | null): Plan {
+  // 'active' | 'trialing' | 'past_due' keep access; canceled/unpaid/etc → free.
+  if (status !== "active" && status !== "trialing" && status !== "past_due") {
+    return "free";
   }
-  return "free";
+  // Paid & active → resolve the tier from the purchased price id. If the price
+  // is unrecognized (legacy/unknown), default to pro so access isn't revoked.
+  if (priceId) {
+    return planFromStripePriceId(priceId) ?? "pro";
+  }
+  return "pro";
 }
 
 async function applyEvent(
@@ -166,8 +175,11 @@ async function applyEvent(
       if (tenantId && customerId) {
         await setTenantStripeCustomer(supabase, tenantId, customerId);
       }
-      // On checkout, payment_status paid → Pro immediately.
-      const plan: Plan = session.payment_status === "paid" ? "pro" : "free";
+      // On checkout, resolve the tier from the purchased price (passed via
+      // metadata by createProCheckout); paid → that tier, unpaid → free.
+      const priceId = (session.metadata?.priceId ?? null) as string | null;
+      const tier = priceId ? planFromStripePriceId(priceId) : null;
+      const plan: Plan = session.payment_status === "paid" ? (tier ?? "pro") : "free";
       if (tenantId) {
         await setTenantPlan(supabase, tenantId, plan);
         return { status: "processed", tenantId, plan };
@@ -179,7 +191,14 @@ async function applyEvent(
     case "customer.subscription.updated":
     case "customer.subscription.deleted": {
       const sub = event.data.object as Stripe.Subscription;
-      const plan = planForSubscriptionStatus(sub.status);
+      // Resolve the price id from the subscription's first line item (may be
+      // absent in test/legacy events — fall back to metadata.priceId).
+      const item = sub.items?.data?.[0];
+      const priceId =
+        (typeof item?.price?.id === "string" && item.price.id) ||
+        (sub.metadata?.priceId as string | undefined) ||
+        null;
+      const plan = planForSubscription(sub.status, priceId);
       // Resolve tenant via customer linkage, then via metadata fallback.
       const customerId =
         typeof sub.customer === "string" ? sub.customer : sub.customer?.id;

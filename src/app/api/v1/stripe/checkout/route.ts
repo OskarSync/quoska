@@ -1,22 +1,31 @@
 /**
  * POST /api/v1/stripe/checkout
  *
- * Create a Stripe Checkout Session for upgrading the caller's tenant to Pro.
+ * Create a Stripe Checkout Session for upgrading the caller's tenant to a paid
+ * tier. Body: { tier: "team" | "business" | "pro" }.
  * Auth: any authenticated user (the upgrade applies to their tenant).
  * Returns the hosted Checkout URL to redirect to.
  *
- * Inert when billing is disabled (no STRIPE_SECRET_KEY / STRIPE_PRO_PRICE_ID).
+ * Inert when billing is disabled (no STRIPE_SECRET_KEY / price IDs).
  */
 
 import { NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/config/supabase/server";
 import { serverEnv } from "@/config/env";
-import { getProPriceId, isBillingEnabled } from "@/lib/stripe";
-import { createProCheckout } from "@/services/subscriptionService";
+import { isBillingEnabled } from "@/lib/stripe";
+import { createCheckout } from "@/services/subscriptionService";
 import { getEmployeeFromAuth } from "@/services/timeEntryService";
+import { PLANS } from "@/config/plans";
+import type { Plan } from "@/types/tenant";
 import type { ApiResponse } from "@/types/api";
 
-export async function POST() {
+const PRICE_ID_BY_TIER: Record<"team" | "business" | "pro", string | undefined> = {
+  team: serverEnv.STRIPE_TEAM_PRICE_ID,
+  business: serverEnv.STRIPE_BUSINESS_PRICE_ID,
+  pro: serverEnv.STRIPE_PRO_PRICE_ID,
+};
+
+export async function POST(request: Request) {
   if (!isBillingEnabled()) {
     return NextResponse.json<ApiResponse<{ url: string }>>(
       { data: null, error: "Billing ist nicht aktiviert." },
@@ -25,6 +34,23 @@ export async function POST() {
   }
 
   try {
+    // Parse + validate the requested tier.
+    const body = (await request.json().catch(() => ({}))) as { tier?: string };
+    const tier = body.tier as "team" | "business" | "pro";
+    if (tier !== "team" && tier !== "business" && tier !== "pro") {
+      return NextResponse.json<ApiResponse<{ url: string }>>(
+        { data: null, error: "Ungültiger Tarif." },
+        { status: 400 },
+      );
+    }
+    const priceId = PRICE_ID_BY_TIER[tier];
+    if (!priceId) {
+      return NextResponse.json<ApiResponse<{ url: string }>>(
+        { data: null, error: `Tarif „${PLANS[tier as Plan].label}" ist nicht konfiguriert.` },
+        { status: 400 },
+      );
+    }
+
     const supabase = await createClient();
     const authResult = await getEmployeeFromAuth(supabase);
     if (!authResult.data) {
@@ -36,7 +62,6 @@ export async function POST() {
 
     const { tenantId } = authResult.data;
 
-    // Fetch tenant name + the caller's email for the checkout session.
     const admin = createAdminClient();
     const { data: tenant } = await admin
       .from("tenants")
@@ -50,12 +75,12 @@ export async function POST() {
       .eq("id", authResult.data.employeeId)
       .single();
 
-    const priceId = getProPriceId()!;
-    const result = await createProCheckout(
+    const result = await createCheckout(
       tenantId,
       tenant?.name ?? "Unbekannt",
       employee?.email ?? "",
       priceId,
+      tier,
       serverEnv.NEXT_PUBLIC_APP_URL,
     );
 

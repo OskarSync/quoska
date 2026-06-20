@@ -40,17 +40,13 @@ export function getStripe(): Stripe | null {
 
 /**
  * True only when the deployment can actually process payments.
- * Gates: a secret key AND a product price to sell.
+ * Gates: a secret key AND at least one plan price configured.
  */
 export function isBillingEnabled(): boolean {
-  return getStripe() !== null && !!serverEnv.STRIPE_PRO_PRICE_ID;
-}
-
-/**
- * The Stripe Price ID for the Pro plan. Env-driven so the open-source code
- * ships without a hardcoded product — the hoster creates the product in their
- * own Stripe dashboard and sets the ID. Null when unset.
- */
-export function getProPriceId(): string | null {
-  return serverEnv.STRIPE_PRO_PRICE_ID ?? null;
+  return (
+    getStripe() !== null &&
+    (!!serverEnv.STRIPE_TEAM_PRICE_ID ||
+      !!serverEnv.STRIPE_BUSINESS_PRICE_ID ||
+      !!serverEnv.STRIPE_PRO_PRICE_ID)
+  );
 }

@@ -15,7 +15,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Employee } from "@/types/database";
 import type { ApiResponse } from "@/types/api";
 import { success, failure } from "@/types/api";
-import { FREE_PLAN_EMPLOYEE_LIMIT } from "@/types/employee";
+import { employeeLimitForPlan } from "@/config/plans";
 import {
   getEmployeesByTenant,
   getDeactivatedEmployees,
@@ -43,13 +43,14 @@ export async function inviteEmployee(
     bundesland?: string | null;
   },
 ): Promise<ApiResponse<Employee>> {
-  // 1. Check plan limit
+  // 1. Check plan limit (per-tier cap; null = unlimited)
   const plan = await getTenantPlan(adminClient, tenantId);
-  if (plan === "free") {
+  const limit = employeeLimitForPlan(plan);
+  if (limit !== null) {
     const count = await countActiveEmployees(adminClient, tenantId);
-    if (count >= FREE_PLAN_EMPLOYEE_LIMIT) {
+    if (count >= limit) {
       return failure(
-        `Maximal ${FREE_PLAN_EMPLOYEE_LIMIT} Mitarbeiter im kostenlosen Tarif. Jetzt upgraden.`,
+        `Maximal ${limit} Mitarbeiter in deinem Tarif. Jetzt upgraden.`,
       );
     }
   }
@@ -243,7 +244,7 @@ export async function getPlanLimitStatus(
     countActiveEmployees(supabase, tenantId),
   ]);
 
-  const limit = plan === "free" ? FREE_PLAN_EMPLOYEE_LIMIT : null;
+  const limit = employeeLimitForPlan(plan);
   const canAddMore = limit === null ? true : activeCount < limit;
 
   return success({ plan, activeCount, limit, canAddMore });
