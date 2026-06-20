@@ -44,9 +44,9 @@ export function MarketingFooter() {
               <Image
                 src="/icons/logo.png"
                 alt="Quoska"
-                width={36}
-                height={36}
-                className="size-9 shrink-0"
+                width={24}
+                height={24}
+                className="size-6 shrink-0"
               />
               <span className="text-lg font-bold tracking-tight text-slate-900">
                 Quoska

@@ -116,10 +116,10 @@ export function Sidebar({ role, userName, onSignOut }: SidebarProps) {
         <Image
           src="/icons/logo.png"
           alt="Quoska"
-          width={36}
-          height={36}
+          width={24}
+          height={24}
           priority
-          className="size-9 shrink-0"
+          className="size-6 shrink-0"
         />
         <span className="text-base font-bold text-gray-900">
           Quoska
