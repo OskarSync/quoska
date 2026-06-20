@@ -1,18 +1,24 @@
 <p align="center">
-  <img src="public/banner.png" alt="Quoska" width="833">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="public/banner-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="public/banner-light.png">
+    <img src="public/banner-light.png" height="70" alt="Quoska">
+  </picture>
 </p>
 
-<h1 align="center">Quoska</h1>
+<p align="center">Gesetzlich vorgeschriebene Zeiterfassung für deutsche KMU — als Flatrate.</p>
 
 <p align="center">
-  <strong>Gesetzlich vorgeschriebene Zeiterfassung für deutsche KMU — als Flatrate.</strong><br>
-  Pausen nach §4 ArbZG, revisionssicherer Audit-Trail, DSGVO-konform. Staffelpreise nach Teamgröße — ab 9 €/Monat, ohne Pro-Kopf-Abrechnung.
-</p>
-
-<p align="center">
-  <a href="https://quoska.app">Hosted Service</a> ·
+  <a href="https://quoska.app">Website</a> ·
   <a href="#-selbst-hosting">Selbst hosten</a> ·
-  <a href="docs">Dokumentation</a>
+  <a href="docs">Dokumentation</a> ·
+  <a href="https://github.com/OskarSync/quoska/blob/main/CONTRIBUTING.md">Mitmachen</a>
+</p>
+
+<p align="center">
+  ArbZG-konforme Zeiterfassung mit Pausen nach §4, revisionssicherem Audit-Trail
+  und DSGVO-konformem Hosting (EU). Staffelpreise nach Teamgröße — ab 9 €/Monat,
+  ohne Pro-Kopf-Abrechnung.
 </p>
 
 ---
