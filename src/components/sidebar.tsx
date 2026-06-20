@@ -115,9 +115,9 @@ export function Sidebar({ role, userName, onSignOut }: SidebarProps) {
         <img
           src="/icons/logo.png"
           alt="Quoska"
-          width={28}
-          height={28}
-          className="size-7 shrink-0"
+          width={26}
+          height={26}
+          className="size-[26px] shrink-0"
         />
         <span className="text-base font-bold text-gray-900">
           Quoska
