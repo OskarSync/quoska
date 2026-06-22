@@ -14,6 +14,9 @@ const publicEnvSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().min(1),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
   NEXT_PUBLIC_APP_URL: z.string().min(1).default("http://localhost:3000"),
+  // "true" to show the "Mit Google anmelden" button. Requires Google OAuth
+  // configured on the Supabase project (hosted) — leave unset for local dev.
+  NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED: z.string().optional(),
 });
 
 const serverEnvSchema = publicEnvSchema.extend({
@@ -43,6 +46,7 @@ export const env: PublicEnv = new Proxy({} as PublicEnv, {
       NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
       NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
       NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+      NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED: process.env.NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED,
     });
     return parsed[prop as keyof PublicEnv];
   },

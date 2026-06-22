@@ -15,6 +15,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createClient } from "@/config/supabase/client";
 import { loginInputSchema, type LoginInput } from "@/types/auth";
+import { GoogleSignInButton, isGoogleOAuthEnabled } from "@/components/google-sign-in-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -107,6 +108,21 @@ function LoginForm() {
           {isSubmitting ? "Anmeldung…" : "Anmelden"}
         </Button>
       </form>
+
+      {/* Google OAuth — only shown when enabled on the hosted build */}
+      {isGoogleOAuthEnabled() && (
+        <>
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-gray-200" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-white px-2 text-gray-400">oder</span>
+            </div>
+          </div>
+          <GoogleSignInButton />
+        </>
+      )}
 
       <p className="mt-6 text-center text-sm text-gray-500">
         Noch kein Account?{" "}

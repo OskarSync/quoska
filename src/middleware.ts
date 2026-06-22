@@ -42,6 +42,7 @@ export async function middleware(request: NextRequest) {
   const isLoggedIn = !!user;
   const isAuthPage =
     pathname === "/login" || pathname === "/register";
+  const isOAuthCallback = pathname.startsWith("/auth/callback");
   const isHomePage = pathname === "/";
   const isAppRoute =
     pathname.startsWith("/app") || pathname === "/setup";
@@ -77,6 +78,12 @@ export async function middleware(request: NextRequest) {
 
   // Allow unauthenticated users on public pages
   if (isAuthPage || isHomePage) {
+    return response;
+  }
+
+  // OAuth callback runs before the session cookie exists — always allow
+  // through so the code-for-session exchange can complete.
+  if (isOAuthCallback) {
     return response;
   }
 
