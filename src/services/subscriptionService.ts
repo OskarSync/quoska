@@ -75,8 +75,8 @@ export async function createCheckout(
     subscription_data: {
       metadata: { tenantId, tenantName, priceId, tier },
     },
-    success_url: `${appUrl}/app/settings/billing?status=success`,
-    cancel_url: `${appUrl}/app/settings/billing?status=cancelled`,
+    success_url: `${appUrl}/app/settings?status=success`,
+    cancel_url: `${appUrl}/app/settings?status=cancelled`,
   });
 
   if (!session.url) return failure("Checkout-Session konnte nicht erstellt werden.");
@@ -94,7 +94,7 @@ export async function createBillingPortal(
   if (!stripe) return failure("Billing ist nicht aktiviert.");
   const session = await stripe.billingPortal.sessions.create({
     customer: stripeCustomerId,
-    return_url: `${appUrl}/app/settings/billing`,
+    return_url: `${appUrl}/app/settings`,
   });
   return success({ url: session.url });
 }

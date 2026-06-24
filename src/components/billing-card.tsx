@@ -12,6 +12,8 @@
 
 "use client";
 
+import { useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ApiResponse } from "@/types/api";
 import type { Plan } from "@/types/tenant";
@@ -20,7 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Sparkles, Check } from "lucide-react";
+import { Sparkles, Check, X, AlertCircle } from "lucide-react";
 
 interface BillingStatus {
   plan: Plan;
@@ -33,6 +35,22 @@ const PAID_TIERS: ReadonlyArray<"team" | "business" | "pro"> = ["team", "busines
 
 export function BillingCard() {
   const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  // Show a banner when returning from Stripe checkout (success or cancelled).
+  // The query param is cleared after surfacing so it doesn't persist on refresh.
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+  const status = searchParams.get("status");
+  const showSuccessBanner = status === "success" && !bannerDismissed;
+  const showCancelledBanner = status === "cancelled" && !bannerDismissed;
+
+  const dismissBanner = () => {
+    setBannerDismissed(true);
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("status");
+    const qs = params.toString();
+    router.replace(qs ? `/app/settings?${qs}` : "/app/settings", { scroll: false });
+  };
 
   const { data, isLoading } = useQuery<BillingStatus>({
     queryKey: ["billingStatus"],
@@ -75,6 +93,24 @@ export function BillingCard() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {showSuccessBanner && (
+          <div className="flex items-start gap-2 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
+            <Check className="size-4 mt-0.5 shrink-0" />
+            <span className="flex-1">Zahlung erhalten — dein Tarif wird in Kürze aktualisiert. Bei Verzögerung „Status aktualisieren“ klicken.</span>
+            <button onClick={dismissBanner} aria-label="Schließen" className="shrink-0 text-emerald-600 hover:text-emerald-800">
+              <X className="size-4" />
+            </button>
+          </div>
+        )}
+        {showCancelledBanner && (
+          <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+            <AlertCircle className="size-4 mt-0.5 shrink-0" />
+            <span className="flex-1">Checkout abgebrochen — es wurde nichts abgerechnet.</span>
+            <button onClick={dismissBanner} aria-label="Schließen" className="shrink-0 text-amber-600 hover:text-amber-800">
+              <X className="size-4" />
+            </button>
+          </div>
+        )}
         {isLoading || !data ? (
           <Skeleton className="h-10 w-full rounded-md" />
         ) : (
