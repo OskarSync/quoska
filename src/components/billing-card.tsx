@@ -52,6 +52,9 @@ export function BillingCard() {
     router.replace(qs ? `/app/settings?${qs}` : "/app/settings", { scroll: false });
   };
 
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
+
   const { data, isLoading } = useQuery<BillingStatus>({
     queryKey: ["billingStatus"],
     queryFn: async () => {
@@ -67,19 +70,43 @@ export function BillingCard() {
   const currentPlan = data?.plan ?? "free";
 
   const startCheckout = async (tier: "team" | "business" | "pro") => {
-    const res = await fetch("/api/v1/stripe/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tier }),
-    });
-    const json: ApiResponse<{ url: string }> = await res.json();
-    if (json.data?.url) window.location.assign(json.data.url);
+    setActionError(null);
+    setPendingAction(`checkout-${tier}`);
+    try {
+      const res = await fetch("/api/v1/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tier }),
+      });
+      const json: ApiResponse<{ url: string }> = await res.json();
+      if (json.data?.url) {
+        window.location.assign(json.data.url);
+        return;
+      }
+      setActionError(json.error ?? "Checkout konnte nicht gestartet werden.");
+    } catch {
+      setActionError("Verbindung fehlgeschlagen. Bitte versuche es erneut.");
+    } finally {
+      setPendingAction(null);
+    }
   };
 
   const openPortal = async () => {
-    const res = await fetch("/api/v1/stripe/portal", { method: "POST" });
-    const json: ApiResponse<{ url: string }> = await res.json();
-    if (json.data?.url) window.location.assign(json.data.url);
+    setActionError(null);
+    setPendingAction("portal");
+    try {
+      const res = await fetch("/api/v1/stripe/portal", { method: "POST" });
+      const json: ApiResponse<{ url: string }> = await res.json();
+      if (json.data?.url) {
+        window.location.assign(json.data.url);
+        return;
+      }
+      setActionError(json.error ?? "Abonnement-Verwaltung konnte nicht geöffnet werden.");
+    } catch {
+      setActionError("Verbindung fehlgeschlagen. Bitte versuche es erneut.");
+    } finally {
+      setPendingAction(null);
+    }
   };
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["billingStatus"] });
@@ -159,20 +186,34 @@ export function BillingCard() {
                     <Button
                       size="sm"
                       variant={isCurrent ? "outline" : "default"}
-                      disabled={isCurrent}
+                      disabled={isCurrent || pendingAction === `checkout-${tier}`}
                       onClick={() => startCheckout(tier)}
                       className="w-full mt-2"
                     >
-                      {isCurrent ? "Aktuell" : `${cfg.label} wählen`}
+                      {pendingAction === `checkout-${tier}`
+                        ? "Weiterleitung…"
+                        : isCurrent
+                          ? "Aktuell"
+                          : `${cfg.label} wählen`}
                     </Button>
                   </div>
                 );
               })}
             </div>
 
+            {actionError && (
+              <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+                <AlertCircle className="size-4 mt-0.5 shrink-0" />
+                <span className="flex-1">{actionError}</span>
+                <button onClick={() => setActionError(null)} aria-label="Schließen" className="shrink-0">
+                  <X className="size-4" />
+                </button>
+              </div>
+            )}
+
             {currentPlan !== "free" && (
-              <Button variant="outline" onClick={openPortal} className="w-full">
-                Abonnement verwalten / kündigen
+              <Button variant="outline" onClick={openPortal} disabled={pendingAction === "portal"} className="w-full">
+                {pendingAction === "portal" ? "Lädt…" : "Abonnement verwalten / kündigen"}
               </Button>
             )}
 
